@@ -1,0 +1,154 @@
+
+{% extends "marketplace/base.html" %}
+{% load marketplace_extras %}
+{% block title %}Panel del cliente{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-3">Mis pedidos</h1>
+
+<section class="mb-3 d-flex justify-content-between align-items-center">
+  <div></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'create_order' %}" class="btn btn-dark btn-sm">Crear nuevo pedido</a>
+    <a href="{% url 'buscar_shoppers' %}" class="btn btn-outline-dark btn-sm">Ver todos los shoppers</a>
+  </div>
+</section>
+
+<section class="mb-4">
+  <div class="ps-table-wrapper">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Shopper</th>
+            <th>Título</th>
+            <th>Estado</th>
+            <th>Precio</th>
+            <th>Pagos realizados</th>
+            <th>Saldo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pedido in pedidos %}
+          <tr>
+            <td>
+              {% if pedido.shopper %}
+                {{ pedido.shopper.user.get_full_name|default:pedido.shopper.user.username }}
+              {% else %}
+                <span class="text-muted small">Sin shopper asignado</span>
+              {% endif %}
+            </td>
+
+            <td>{{ pedido.titulo }}</td>
+            <td>{{ pedido.get_estado_display }}</td>
+
+            <td>
+              {% if pedido.precio %}
+                {{ pedido.precio|moneda }}
+              {% else %}
+                <span class="text-muted small">Sin definir</span>
+              {% endif %}
+            </td>
+
+            <td>
+              <div class="d-inline-flex align-items-center gap-2">
+                <a
+                  href="{% url 'order_detail' pedido.pk %}#pagos"
+                  class="btn btn-sm btn-outline-dark"
+                  title="Reportar un abono (queda pendiente de aprobación del shopper)"
+                  style="line-height: 1; padding: 0.1rem 0.45rem;"
+                >
+                  +
+                </a>
+                <span>{{ pedido.total_pagos|moneda }}</span>
+              </div>
+              {% if pedido.total_pagos_pendientes %}
+                <div class="text-muted small">
+                  Pendiente: {{ pedido.total_pagos_pendientes|moneda }}
+                </div>
+              {% endif %}
+            </td>
+
+            <td>{{ pedido.saldo|moneda }}</td>
+
+            <td>
+              <a href="{% url 'order_detail' pedido.pk %}" class="btn btn-sm btn-outline-dark">
+                Ver
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted">
+              Aún no tenés pedidos creados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% if pedidos_pendientes_resena %}
+<section class="mb-4">
+  <div class="ps-card">
+    <h2 class="h6 mb-3">Pedidos entregados pendientes de reseña</h2>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Shopper</th>
+            <th>Calificación</th>
+            <th>Comentario</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pedido in pedidos_pendientes_resena %}
+          <tr>
+            <td>#{{ pedido.id }} · {{ pedido.titulo }}</td>
+            <td>
+              {% if pedido.shopper %}
+                {{ pedido.shopper.user.get_full_name|default:pedido.shopper.user.username }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td style="min-width: 120px;">
+              <form method="post" class="d-flex align-items-center gap-1">
+                {% csrf_token %}
+                <input type="hidden" name="order_id" value="{{ pedido.id }}" />
+                <select name="rating" class="form-select form-select-sm">
+                  <option value="5">5 ⭐</option>
+                  <option value="4">4 ⭐</option>
+                  <option value="3">3 ⭐</option>
+                  <option value="2">2 ⭐</option>
+                  <option value="1">1 ⭐</option>
+                </select>
+            </td>
+            <td>
+                <input
+                  type="text"
+                  name="comment"
+                  class="form-control form-control-sm"
+                  placeholder="Comentario (opcional)"
+                />
+            </td>
+            <td>
+                <button type="submit" class="btn btn-dark btn-sm">
+                  Enviar
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

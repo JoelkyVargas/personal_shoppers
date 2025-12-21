@@ -1,0 +1,293 @@
+
+{% extends "marketplace/base.html" %}
+{% load marketplace_extras %}
+{% block title %}Mi perfil{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-3">Mi perfil como shopper</h1>
+
+<section class="mb-4">
+  <div class="ps-card">
+    <div class="row g-3 align-items-center">
+      <div class="col-auto">
+        {% if foto_url %}
+        <img
+          src="{{ foto_url }}"
+          alt="Foto de perfil"
+          class="rounded-circle"
+          style="width: 80px; height: 80px; object-fit: cover;"
+        />
+        {% else %}
+        <div
+          class="rounded-circle d-flex align-items-center justify-content-center bg-secondary text-white"
+          style="width: 80px; height: 80px;"
+        >
+          <span class="fw-bold">
+            {{ shopper.user.get_full_name|default:shopper.user.username|first|upper }}
+          </span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="col">
+        <h2 class="h5 mb-1">
+          {{ shopper.user.get_full_name|default:shopper.user.username }}
+        </h2>
+        <p class="mb-1 text-muted">
+          {% if shopper.ciudad_base %}
+            Vive en: {{ shopper.ciudad_base }}, {{ shopper.get_pais_display }}
+          {% else %}
+            País: {{ shopper.get_pais_display }}
+          {% endif %}
+        </p>
+        <p class="mb-1 text-muted">
+          Actualmente:
+          {{ shopper.ubicacion_actual }}
+        </p>
+        <p class="mb-0">
+          ⭐ {{ shopper.calificacion }} ·
+          {{ pedidos_completados }} pedidos completados
+        </p>
+      </div>
+      <div class="col-md-3 text-md-end">
+        {% if shopper.acepta_nuevos_pedidos %}
+        <span class="badge bg-success">Aceptando nuevos pedidos</span>
+        {% else %}
+        <span class="badge bg-secondary">Temporalmente lleno</span>
+        {% endif %}
+        <br />
+        {% if shopper.acepta_pagos_parciales %}
+        <span class="badge bg-primary mt-2">Acepta pagos parciales</span>
+        {% else %}
+        <span class="badge bg-light text-dark mt-2">Solo pago completo</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mb-4">
+  <div class="ps-card">
+    <h2 class="h6 mb-3">Editar mis datos</h2>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="profile" />
+
+      {{ form.non_field_errors }}
+
+      <div class="mb-3">
+        <label class="form-label">Foto de perfil (obligatoria para shoppers)</label>
+        <input
+          type="file"
+          name="foto_archivo"
+          class="form-control"
+          accept="image/*"
+          {% if not foto_url %}required{% endif %}
+        />
+        <div class="form-text">
+          Subí una foto clara de tu rostro o una imagen que te represente como shopper.
+        </div>
+      </div>
+
+      {# Biografía eliminada #}
+
+      <div class="mb-3">
+        <label class="form-label">Especialidades de compra</label>
+        {{ form.especialidades }}
+        {% if form.especialidades.help_text %}
+        <div class="form-text">{{ form.especialidades.help_text }}</div>
+        {% endif %}
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          {{ form.ciudad_base.label_tag }}
+          {{ form.ciudad_base }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label d-block">Ubicación actual</label>
+          <div class="form-check">
+            {{ form.actualmente_en_el_extranjero }}
+            <label
+              class="form-check-label"
+              for="{{ form.actualmente_en_el_extranjero.id_for_label }}"
+            >
+              Estoy actualmente en el extranjero
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-4">
+          {{ form.ciudad_extranjero.label_tag }}
+          {{ form.ciudad_extranjero }}
+        </div>
+        <div class="col-md-4">
+          {{ form.pais_extranjero.label_tag }}
+          {{ form.pais_extranjero }}
+          <div class="form-text">Por ahora, solo se permite USA.</div>
+        </div>
+        <div class="col-md-4">
+          {{ form.fecha_regreso.label_tag }}
+          {{ form.fecha_regreso }}
+        </div>
+      </div>
+
+      <hr class="my-3" />
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label d-block">Disponibilidad</label>
+          <div class="form-check">
+            {{ form.acepta_nuevos_pedidos }}
+            <label
+              class="form-check-label"
+              for="{{ form.acepta_nuevos_pedidos.id_for_label }}"
+            >
+              Acepto nuevos pedidos
+            </label>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label d-block">Pagos</label>
+          <div class="form-check">
+            {{ form.acepta_pagos_parciales }}
+            <label
+              class="form-check-label"
+              for="{{ form.acepta_pagos_parciales.id_for_label }}"
+            >
+              Acepto pagos parciales
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {# Monto mínimo / máximo habitual eliminados #}
+
+      <div class="row mb-3">
+        <div class="col-md-4">
+          {{ form.tarifa_base_crc.label_tag }}
+          {{ form.tarifa_base_crc }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        {{ form.esquema_tarifas.label_tag }}
+        {{ form.esquema_tarifas }}
+        {% if form.esquema_tarifas.help_text %}
+        <div class="form-text">
+          {{ form.esquema_tarifas.help_text }}
+        </div>
+        {% endif %}
+      </div>
+
+      <button type="submit" name="guardar_perfil" value="1" class="btn btn-dark">
+        Guardar cambios
+      </button>
+    </form>
+  </div>
+</section>
+
+<section class="mb-4">
+  <div class="ps-card">
+    <h2 class="h6 mb-3">Mis viajes</h2>
+
+    <h3 class="h6">Próximos viajes</h3>
+    {% if viajes_futuros %}
+    <ul class="list-unstyled mb-3">
+      {% for v in viajes_futuros %}
+      <li class="mb-1">
+        <strong>{{ v.ciudad_destino }}</strong>
+        {% if v.pais_destino %}
+          ({{ v.pais_destino }})
+        {% endif %}
+        · {{ v.fecha_inicio|date:"d/m/Y" }} – {{ v.fecha_fin|date:"d/m/Y" }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted small">Aún no registraste viajes futuros.</p>
+    {% endif %}
+
+    <h3 class="h6 mt-3">Viajes pasados</h3>
+    {% if viajes_pasados %}
+    <ul class="list-unstyled mb-0">
+      {% for v in viajes_pasados %}
+      <li class="mb-1 text-muted">
+        {{ v.ciudad_destino }}
+        {% if v.pais_destino %}
+          ({{ v.pais_destino }})
+        {% endif %}
+        · {{ v.fecha_inicio|date:"d/m/Y" }} – {{ v.fecha_fin|date:"d/m/Y" }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted small mb-0">
+      Todavía no hay viajes pasados registrados.
+    </p>
+    {% endif %}
+
+    <hr class="my-3" />
+
+    <h3 class="h6 mb-2">Registrar un próximo viaje</h3>
+
+    {% if trip_form %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="trip" />
+
+      {{ trip_form.non_field_errors }}
+
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          {{ trip_form.ciudad_destino.label_tag }}
+          {{ trip_form.ciudad_destino }}
+          {{ trip_form.ciudad_destino.errors }}
+        </div>
+        <div class="col-md-2">
+          {{ trip_form.pais_destino.label_tag }}
+          {{ trip_form.pais_destino }}
+          {{ trip_form.pais_destino.errors }}
+        </div>
+        <div class="col-md-3">
+          {{ trip_form.fecha_inicio.label_tag }}
+          {{ trip_form.fecha_inicio }}
+          {{ trip_form.fecha_inicio.errors }}
+        </div>
+        <div class="col-md-3">
+          {{ trip_form.fecha_fin.label_tag }}
+          {{ trip_form.fecha_fin }}
+          {{ trip_form.fecha_fin.errors }}
+        </div>
+      </div>
+
+      <div class="mt-3">
+        {{ trip_form.notas.label_tag }}
+        {{ trip_form.notas }}
+        {{ trip_form.notas.errors }}
+      </div>
+
+      <button type="submit" name="agregar_viaje" value="1" class="btn btn-outline-dark mt-3">
+        Guardar viaje
+      </button>
+    </form>
+    {% else %}
+    <p class="text-muted small mb-0">
+      Este formulario requiere que la vista envíe <code>trip_form</code> al template.
+    </p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="mb-4">
+  <div class="ps-card">
+    <h2 class="h6 mb-2">Opiniones de clientes</h2>
+    <p class="text-muted small mb-0">
+      ⭐ {{ shopper.calificacion }} · Por ahora mostramos tu calificación
+      promedio basada en las reseñas de tus clientes.
+    </p>
+  </div>
+</section>
+{% endblock %}

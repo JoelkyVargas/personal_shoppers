@@ -1,0 +1,84 @@
+{% extends "marketplace/base.html" %}
+{% block title %}Registrarme como shopper{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="ps-card">
+      <h1 class="h4 mb-3">Registrarme como shopper</h1>
+      <p class="text-muted small mb-3">
+        Completá tus datos y subí una foto clara. Esa será tu imagen visible para los clientes.
+      </p>
+
+      {# 🔹 ALERTA GENERAL SI HAY ERRORES EN EL FORM O EN LA FOTO #}
+      {% if form.errors or foto_error %}
+      <div class="alert alert-danger">
+        <strong>Revisá el formulario.</strong>
+        Hay uno o más errores. Corregí los campos marcados en rojo y volvé a intentar.
+      </div>
+
+      {# 🔹 DEBUG: MOSTRAR ERRORES CRUDOS DEL FORM #}
+      <pre style="font-size: 0.8rem; background:#fff3cd; padding:.5rem; border-radius:.25rem; white-space:pre-wrap;">
+{{ form.errors }}
+{% if foto_error %}FOTO_ERROR: {{ foto_error }}{% endif %}
+      </pre>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+          {% if field.name != "foto_url" %}
+            <div class="mb-3">
+              {{ field.label_tag }}
+              {{ field }}
+              {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+              {% endif %}
+              {% if field.errors %}
+                {% for error in field.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">
+            Foto de perfil (obligatoria)
+          </label>
+          <input
+            type="file"
+            name="foto_archivo"
+            class="form-control"
+            accept="image/*"
+            required
+          />
+          {% if foto_error %}
+          <div class="text-danger small mt-1">
+            {{ foto_error }}
+          </div>
+          {% endif %}
+          <div class="form-text">
+            Subí una foto en formato JPG o PNG.
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-dark w-100">
+          Crear mi cuenta de shopper
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

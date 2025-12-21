@@ -1,0 +1,426 @@
+
+
+{% extends "marketplace/base.html" %}
+{% block title %}Personal Shoppers{% endblock %}
+
+{% block content %}
+
+<section class="mb-5">
+  <div class="row align-items-stretch g-4">
+
+    {# IZQUIERDA: copy + CTA (centrado vertical + fondo admin) #}
+    <div class="col-lg-7 d-flex text-center text-lg-start">
+      <div
+        class="ps-hero-left w-100"
+        {% if hero_bg and hero_bg.image %}
+          style="background-image: url('{{ hero_bg.image.url }}');"
+        {% endif %}
+      >
+        <div class="ps-hero-left__inner">
+          <h1 class="ps-hero-title mb-3">
+            Conectamos tu compra con viajeros confiables.
+          </h1>
+
+          <p class="ps-hero-subtitle text-muted mb-3">
+            Pedí lo que querés, definí tu presupuesto y un personal shopper se encarga del resto.
+          </p>
+
+          {% if not user.is_authenticated %}
+          <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3 mt-2">
+            <a href="{% url 'register_customer' %}" class="btn btn-dark btn-lg">
+              Soy cliente
+            </a>
+            <a href="{% url 'register_shopper' %}" class="btn btn-outline-dark btn-lg">
+              Quiero ser shopper
+            </a>
+          </div>
+          {% elif es_cliente %}
+          <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3 mt-3">
+            <a href="{% url 'create_order' %}" class="btn btn-dark">
+              Crear un nuevo pedido
+            </a>
+            <a href="{% url 'buscar_shoppers' %}" class="btn btn-outline-dark">
+              Ver todos los shoppers
+            </a>
+          </div>
+          {% elif es_shopper %}
+          <div class="mt-4">
+            <a href="{% url 'shopper_dashboard' %}" class="btn btn-dark">
+              Ir a mi panel de shopper
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# DERECHA: arriba EN USA, abajo VIAJAN PRONTO #}
+    <div class="col-lg-5">
+
+      {# ===== En EE. UU. ahora ===== #}
+      {% if en_usa_slides %}
+      <div class="mb-4">
+        <div class="d-flex align-items-end justify-content-between mb-2">
+          <h2 class="h6 mb-0 text-muted">En EE. UU. ahora</h2>
+          <a href="{% url 'buscar_shoppers' %}" class="btn btn-outline-dark btn-sm">
+            Ver todos
+          </a>
+        </div>
+
+        <div id="usaCarousel" class="carousel slide" data-bs-ride="false" data-bs-touch="true" data-bs-wrap="true">
+          <div class="carousel-inner">
+            {% for slide in en_usa_slides %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <div class="row g-3">
+                {% for shopper in slide %}
+                <div class="col-12 col-md-6">
+                  <article class="ps-card h-100">
+                    <div class="d-flex align-items-center mb-2">
+                      {% if shopper.photo and shopper.photo.image %}
+                      <img
+                        src="{{ shopper.photo.image.url }}"
+                        alt="Foto de {{ shopper.user.get_full_name|default:shopper.user.username }}"
+                        class="rounded-circle me-2"
+                        style="width: 44px; height: 44px; object-fit: cover;"
+                      />
+                      {% else %}
+                      <div
+                        class="rounded-circle d-flex align-items-center justify-content-center bg-secondary text-white me-2"
+                        style="width: 44px; height: 44px;"
+                      >
+                        <span class="fw-bold">
+                          {{ shopper.user.get_full_name|default:shopper.user.username|first|upper }}
+                        </span>
+                      </div>
+                      {% endif %}
+
+                      <div class="flex-grow-1 ps-flex-minw-0">
+                        {# Ajuste clave: sin justify-between; el chip se empuja con ms-auto y el título hace ellipsis #}
+                        <div class="d-flex align-items-center ps-title-row">
+                          <h3 class="h6 mb-0 ps-title-ellipsis">
+                            {{ shopper.user.get_full_name|default:shopper.user.username }}
+                          </h3>
+                          <span class="ps-chip ps-chip-usa ps-chip-tight ms-auto">EN EE. UU.</span>
+                        </div>
+
+                        <div class="small text-muted">
+                          ⭐ {{ shopper.calificacion }} / 5
+                        </div>
+
+                        <div class="small text-muted">
+                          📍 {{ shopper.ubicacion_actual }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-auto pt-2 d-flex justify-content-end">
+                      <a href="{% url 'shopper_detail' shopper.pk %}" class="btn btn-sm btn-outline-dark">
+                        Ver perfil
+                      </a>
+                    </div>
+                  </article>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          {# Controles SIEMPRE visibles (aunque haya 1 slide) #}
+          <button class="carousel-control-prev ps-carousel-prev" type="button" data-bs-target="#usaCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+          </button>
+          <button class="carousel-control-next ps-carousel-next" type="button" data-bs-target="#usaCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+          </button>
+
+        </div>
+      </div>
+      {% endif %}
+
+      {# ===== Viajan pronto (próximos 7 días) ===== #}
+      {% if viajan_pronto_slides %}
+      <div>
+        <div class="d-flex align-items-end justify-content-between mb-2">
+          <h2 class="h6 mb-0 text-muted">Viajan pronto</h2>
+          <a href="{% url 'buscar_shoppers' %}" class="btn btn-outline-dark btn-sm">
+            Ver todos
+          </a>
+        </div>
+
+        <div id="soonCarousel" class="carousel slide" data-bs-ride="false" data-bs-touch="true" data-bs-wrap="true">
+          <div class="carousel-inner">
+            {% for slide in viajan_pronto_slides %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <div class="row g-3">
+                {% for item in slide %}
+                {% with shopper=item.shopper trip=item.trip %}
+                <div class="col-12 col-md-6">
+                  <article class="ps-card h-100">
+                    <div class="d-flex align-items-center mb-2">
+                      {% if shopper.photo and shopper.photo.image %}
+                      <img
+                        src="{{ shopper.photo.image.url }}"
+                        alt="Foto de {{ shopper.user.get_full_name|default:shopper.user.username }}"
+                        class="rounded-circle me-2"
+                        style="width: 44px; height: 44px; object-fit: cover;"
+                      />
+                      {% else %}
+                      <div
+                        class="rounded-circle d-flex align-items-center justify-content-center bg-secondary text-white me-2"
+                        style="width: 44px; height: 44px;"
+                      >
+                        <span class="fw-bold">
+                          {{ shopper.user.get_full_name|default:shopper.user.username|first|upper }}
+                        </span>
+                      </div>
+                      {% endif %}
+
+                      <div class="flex-grow-1 ps-flex-minw-0">
+                        <div class="d-flex align-items-center ps-title-row">
+                          <h3 class="h6 mb-0 ps-title-ellipsis">
+                            {{ shopper.user.get_full_name|default:shopper.user.username }}
+                          </h3>
+                          <span class="ps-chip ps-chip-soon ps-chip-tight ms-auto">
+                            VIAJA {{ trip.fecha_inicio|date:"d/m" }}
+                          </span>
+                        </div>
+
+                        <div class="small text-muted">
+                          ⭐ {{ shopper.calificacion }} / 5
+                        </div>
+
+                        <div class="small text-muted">
+                          📍 {{ shopper.ubicacion_actual }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <p class="small text-muted mb-2">
+                      Destino: {{ trip.ciudad_destino }}{% if trip.pais_destino %}, {{ trip.get_pais_destino_display }}{% endif %}
+                    </p>
+
+                    <div class="mt-auto pt-2 d-flex justify-content-end">
+                      <a href="{% url 'shopper_detail' shopper.pk %}" class="btn btn-sm btn-outline-dark">
+                        Ver perfil
+                      </a>
+                    </div>
+                  </article>
+                </div>
+                {% endwith %}
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          {# Controles SIEMPRE visibles (aunque haya 1 slide) #}
+          <button class="carousel-control-prev ps-carousel-prev" type="button" data-bs-target="#soonCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+          </button>
+          <button class="carousel-control-next ps-carousel-next" type="button" data-bs-target="#soonCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+          </button>
+
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</section>
+
+{# Mini sección de confianza #}
+<section class="mb-5">
+  <div class="ps-card text-center">
+    <p class="text-muted mb-3">En números</p>
+
+    <div class="row g-5 justify-content-center ps-metrics-row">
+      <div class="col-12 col-md-4">
+        <div class="ps-metric-card">
+          <div class="ps-metric-value">{{ stats_shoppers|default:"0" }}</div>
+          <div class="ps-metric-label">shoppers activos</div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="ps-metric-card">
+          <div class="ps-metric-value">{{ stats_orders|default:"0" }}</div>
+          <div class="ps-metric-label">pedidos entregados</div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="ps-metric-card">
+          <div class="ps-metric-value">⭐ {{ stats_rating|default:"0.0" }}</div>
+          <div class="ps-metric-label">calificación promedio</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ============================#}
+{#Carrusel admin (fotos + comentario)#}
+{# ============================ #}
+<section class="mb-5">
+  <h2 class="h5 mb-3 text-center">Ejemplos de lo que podés pedir</h2>
+
+  {% if carousel_slides %}
+  <div
+    id="ejemplosCarousel"
+    class="carousel slide ps-ejemplos-carousel"
+    data-bs-ride="carousel"
+    data-bs-interval="2000"
+    data-bs-wrap="true"
+    data-bs-touch="true"
+  >
+    <div class="carousel-inner">
+      {% for slide in carousel_slides %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <div class="ps-card ps-ejemplo-slide position-relative p-0 overflow-hidden">
+          {% if slide.comentario %}
+          <div class="ps-ejemplo-caption">
+            {{ slide.comentario }}
+          </div>
+          {% endif %}
+
+          <img
+            src="{{ slide.image.url }}"
+            class="d-block w-100 ps-ejemplo-img"
+            alt="Ejemplo"
+          />
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if carousel_slides|length > 1 %}
+    <button
+      class="carousel-control-prev"
+      type="button"
+      data-bs-target="#ejemplosCarousel"
+      data-bs-slide="prev"
+    >
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Anterior</span>
+    </button>
+    <button
+      class="carousel-control-next"
+      type="button"
+      data-bs-target="#ejemplosCarousel"
+      data-bs-slide="next"
+    >
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Siguiente</span>
+    </button>
+    {% endif %}
+  </div>
+  {% else %}
+  <div id="ejemplosCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="2000" data-bs-wrap="true">
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        <div class="ps-card text-center">
+          <h3 class="h6 mb-2">Ropa y calzado</h3>
+          <p class="text-muted small mb-0">
+            Jeans, tenis, vestidos, jackets y más, aprovechando ofertas locales.
+          </p>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <div class="ps-card text-center">
+          <h3 class="h6 mb-2">Tecnología</h3>
+          <p class="text-muted small mb-0">
+            Laptops, celulares, tablets, audífonos y accesorios que tal vez no
+            encontrás en tu país.
+          </p>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <div class="ps-card text-center">
+          <h3 class="h6 mb-2">Regalos y niños</h3>
+          <p class="text-muted small mb-0">
+            Juguetes, juegos de mesa, ropa infantil y detalles especiales para
+            cumpleaños y fechas importantes.
+          </p>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <div class="ps-card text-center">
+          <h3 class="h6 mb-2">Belleza y cuidado personal</h3>
+          <p class="text-muted small mb-0">
+            Maquillaje, skin care, fragancias y productos de marcas específicas
+            que te gustan.
+          </p>
+        </div>
+      </div>
+    </div>
+    <button
+      class="carousel-control-prev"
+      type="button"
+      data-bs-target="#ejemplosCarousel"
+      data-bs-slide="prev"
+    >
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Anterior</span>
+    </button>
+    <button
+      class="carousel-control-next"
+      type="button"
+      data-bs-target="#ejemplosCarousel"
+      data-bs-slide="next"
+    >
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Siguiente</span>
+    </button>
+  </div>
+  {% endif %}
+</section>
+
+{# Vitrina de algunos shoppers #}
+{% if shoppers and not es_shopper %}
+<section class="mb-4">
+  <h2 class="h5 mb-3">Algunos shoppers en la plataforma</h2>
+  <div class="row g-3">
+    {% for shopper in shoppers %}
+    <div class="col-md-4">
+      <article class="ps-card h-100">
+        <div class="d-flex flex-column h-100">
+          <div class="mb-2">
+            <h3 class="h6 mb-1">
+              {{ shopper.user.get_full_name|default:shopper.user.username }}
+            </h3>
+            <p class="small text-muted mb-1">
+              {{ shopper.especialidades|default:"Sin especialidades definidas" }}
+            </p>
+            <p class="small text-muted mb-0">
+              📍 {{ shopper.ubicacion_actual }}
+            </p>
+          </div>
+          <div class="mt-auto pt-2 d-flex justify-content-between align-items-center">
+            <span class="small text-muted">
+              ⭐ {{ shopper.calificacion }} / 5
+            </span>
+            <a
+              href="{% url 'shopper_detail' shopper.pk %}"
+              class="btn btn-sm btn-outline-secondary"
+            >
+              Ver perfil
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="text-center mt-3">
+    <a href="{% url 'buscar_shoppers' %}" class="btn btn-outline-dark btn-sm">
+      Ver todos los shoppers
+    </a>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

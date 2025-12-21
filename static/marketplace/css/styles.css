@@ -1,0 +1,361 @@
+/* =========================================================
+   THEME TOKENS (CSS variables)
+   - Colores base y “design system” mínimo
+   ========================================================= */
+:root {
+  --ps-bg: #fafafa;
+  --ps-card-bg: #ffffff;
+  --ps-border: rgba(0, 0, 0, 0.06);
+  --ps-text-main: #1a1a1a;
+  --ps-text-muted: #555555;
+  --ps-primary: #111111;
+  --ps-accent: #6a5acd;
+  --ps-accent-soft: #4da3ff;
+}
+
+/* =========================================================
+   GLOBAL
+   - Tipografía y fondo general
+   ========================================================= */
+body {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: var(--ps-bg);
+  color: var(--ps-text-main);
+}
+
+/* =========================================================
+   BRANDING (logo / header)
+   ========================================================= */
+.ps-logo {
+  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ps-logo span {
+  color: var(--ps-accent);
+}
+
+.ps-header {
+  background-color: #ffffff;
+}
+
+/* =========================================================
+   TYPOGRAPHY
+   - Títulos principales
+   ========================================================= */
+.ps-hero-title {
+  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-weight: 600;
+  font-size: 2.1rem;
+}
+
+/* =========================================================
+   CARDS / TABLE WRAPPERS
+   - Contenedores consistentes para UI
+   ========================================================= */
+.ps-card {
+  background-color: var(--ps-card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--ps-border);
+  padding: 1.25rem;
+  box-shadow: 0 1px 4px rgba(15, 17, 21, 0.04);
+}
+
+
+
+
+
+
+
+
+
+.ps-table-wrapper {
+  background-color: var(--ps-card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--ps-border);
+  padding: 0.75rem;
+}
+
+
+
+/* =========================================================
+   INLINE FORMS
+   - Ajustes visuales para forms renderizados con {{ form.as_p }}
+   ========================================================= */
+.ps-inline-form p {
+  margin-bottom: 0.75rem;
+}
+
+.ps-inline-form input,
+.ps-inline-form select,
+.ps-inline-form textarea {
+  border-radius: 8px !important;
+}
+
+/* =========================================================
+   CHIPS (EN EE. UU. / VIAJA PRONTO)
+   ========================================================= */
+.ps-chip {
+  display: inline-block;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  color: #111111;
+  white-space: nowrap;
+}
+
+.ps-chip-usa {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.ps-chip-soon {
+  background: rgba(106, 90, 205, 0.12);
+  border-color: rgba(106, 90, 205, 0.22);
+}
+
+/* =========================================================
+   SMALL BUTTON (para "Ver" mini, etc.)
+   ========================================================= */
+.btn-ps-mini {
+  padding: 0.18rem 0.45rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+
+
+
+
+
+/* ============================
+   Flechas carrusel (derecha, en USA / viajan pronto)
+   ============================ */
+/* Asegura que las flechas queden dentro del carrusel y sean clickeables */
+#usaCarousel .carousel-control-prev,
+#usaCarousel .carousel-control-next,
+#soonCarousel .carousel-control-prev,
+#soonCarousel .carousel-control-next {
+  width: 12%;
+}
+
+/* Opcional: evita que se peguen demasiado al borde */
+#usaCarousel .carousel-control-prev,
+#soonCarousel .carousel-control-prev {
+  left: -6px;
+}
+
+#usaCarousel .carousel-control-next,
+#soonCarousel .carousel-control-next {
+  right: -6px;
+}
+
+
+
+
+
+
+/* =========================================================
+   HERO (copy + CTA) con fondo admin
+   - Contenedor con imagen de fondo + overlay para legibilidad
+   - Se evita “tinte” en los bordes usando un borde superpuesto
+   ========================================================= */
+.ps-hero-left {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 2.25rem 1.75rem;
+
+  /* AUMENTADO: más grande la sección principal */
+  min-height: 480px;
+
+  /* Centrado vertical del contenido */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  /* Fondo (imagen admin) */
+  background-color: #ffffff;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  /* Quitar el borde real para evitar “tintes”/artefactos */
+  border: none;
+  box-shadow: 0 1px 4px rgba(15, 17, 21, 0.04);
+
+  /* Ayuda a evitar “hairlines” en algunos browsers */
+  transform: translateZ(0);
+}
+
+/* Overlay para legibilidad sobre imágenes
+   - Para cambiar opacidad: ajustá los valores alpha (0.xx) de rgba(...)
+     Ej: 0.72 -> más opaco, 0.40 -> más transparente */
+.ps-hero-left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 0;
+
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.55) 55%,
+    rgba(255, 255, 255, 0.30) 100%
+  );
+  backdrop-filter: blur(1px);
+}
+
+/* Borde “encima” del fondo y overlay
+   - Evita líneas teñidas por la imagen de fondo */
+.ps-hero-left::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2;
+
+  /* borde sólido para que no agarre color del fondo */
+  border: 1px solid #e7e7e7;
+}
+
+/* Contenido del hero por encima del overlay */
+.ps-hero-left__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+/* =========================================================
+   CARRUSEL "EJEMPLOS" (formato estable)
+   - Evita que el carrusel cambie de altura por imagen/texto
+   - Mantiene caption dentro de la imagen
+   ========================================================= */
+.ps-ejemplos-carousel {
+  overflow: hidden;
+}
+
+/* Altura fija del carrusel: ajustá este número si lo querés más bajo/alto */
+.ps-ejemplos-carousel .carousel-item {
+  height: 420px;
+}
+
+/* Contenedor del slide: ancla para caption + recorte de overflow */
+.ps-ejemplo-slide {
+  position: relative;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden; /* clave: el caption no se “sale” */
+  border: 1px solid var(--ps-border);
+  box-shadow: 0 1px 4px rgba(15, 17, 21, 0.04);
+}
+
+/* Imagen: rellena el contenedor con recorte consistente */
+.ps-ejemplo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Caption: siempre encima y dentro del slide */
+.ps-ejemplo-caption {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 2;
+
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+
+  color: #111111;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(6px);
+
+  /* Evita que un texto muy largo “rompa” la composición */
+  max-height: 4.2rem;
+  overflow: hidden;
+}
+
+/* =========================================================
+   Títulos + chips dentro de cards (evitar overflow)
+   - Clave: permitir que el contenedor “encoga” (min-width:0)
+   ========================================================= */
+.ps-flex-minw-0 {
+  min-width: 0; /* aplica a contenedores flex que contienen ellipsis */
+}
+
+.ps-title-row {
+  gap: 0.5rem;
+  min-width: 0;       /* clave */
+  flex-wrap: nowrap;  /* mantenemos en una línea (título + chip) */
+}
+
+.ps-title-ellipsis {
+  flex: 1 1 auto;
+  min-width: 0;       /* clave */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Chip más compacto y con límite de ancho real para que no se salga */
+.ps-chip-tight {
+  flex: 0 0 auto;          /* permitir “encogerse” si hace falta */
+  max-width: none;          /* más estricto para evitar overflow */
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+
+  padding: 0.18rem 0.45rem;
+  font-size: 0.70rem;
+}
+
+/* =========================================================
+   Flechas carrusel (más visibles y “tocables”)
+   - z-index para que queden encima de cards
+   - sin offsets negativos para que no se “recorten”
+   ========================================================= */
+.ps-carousel-prev,
+.ps-carousel-next {
+  width: 46px;
+  opacity: 1;
+  z-index: 5;
+}
+
+.ps-carousel-prev {
+  left: 6px;
+}
+
+.ps-carousel-next {
+  right: 6px;
+}
+
+.ps-carousel-prev .carousel-control-prev-icon,
+.ps-carousel-next .carousel-control-next-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background-size: 14px 14px;
+  background-color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  box-shadow: 0 1px 4px rgba(15, 17, 21, 0.12);
+}
+
+
+

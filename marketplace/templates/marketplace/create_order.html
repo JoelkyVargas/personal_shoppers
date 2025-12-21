@@ -1,0 +1,276 @@
+{% extends "marketplace/base.html" %}
+{% load marketplace_extras %}
+{% block title %}Nuevo pedido{% endblock %}
+
+{% block content %}
+<h1 class="h5 mb-3">Crear nuevo pedido</h1>
+
+<div class="ps-card">
+  <div class="row">
+    <!-- COLUMNA IZQUIERDA: FORMULARIO DEL PEDIDO -->
+    <div class="col-md-8">
+{% if form.errors %}
+  <div class="alert alert-danger">
+    <div class="fw-semibold mb-1">Errores del formulario</div>
+    {{ form.non_field_errors }}
+    <hr class="my-2" />
+    {{ form.errors }}
+  </div>
+{% endif %}
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        <!-- 1. CANTIDAD DE ARTÍCULOS -->
+        <div class="mb-3">
+          <label for="numero_articulos" class="form-label">
+            ¿Cuántos artículos vas a pedir?
+          </label>
+          <select
+            id="numero_articulos"
+            name="numero_articulos"
+            class="form-select"
+          >
+            {% for i in "12345" %}
+            <option value="{{ forloop.counter }}"
+              {% if forloop.counter|stringformat:"s" == numero_articulos|stringformat:"s" %}
+                selected
+              {% endif %}
+            >
+              {{ forloop.counter }}
+            </option>
+            {% endfor %}
+          </select>
+          <div class="form-text">
+            Podés empezar con un número aproximado; luego podés ajustar los
+            detalles.
+          </div>
+        </div>
+
+        <!-- 2. BLOQUES POR ARTÍCULO -->
+        <div id="articulos-container"></div>
+
+        <hr class="my-4" />
+
+        <!-- 3. DETALLES GENERALES DEL PEDIDO -->
+        <h2 class="h6 mb-3">Detalles generales del pedido</h2>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">
+              Presupuesto total
+            </label>
+            {{ form.presupuesto_maximo_total }}
+            {% if form.presupuesto_maximo_total.errors %}
+            <div class="text-danger small">
+              {{ form.presupuesto_maximo_total.errors }}
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">
+              Shopper de preferencia
+            </label>
+            {{ form.shopper }}
+            {% if form.shopper.errors %}
+            <div class="text-danger small">
+              {{ form.shopper.errors }}
+            </div>
+            {% endif %}
+            <div class="form-text">
+              Podés elegir un shopper o dejarlo vacío para que cualquier
+              shopper disponible tome tu pedido.
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            {{ form.moneda.label_tag }}
+            {{ form.moneda }}
+            {% if form.moneda.errors %}
+            <div class="text-danger small">
+              {{ form.moneda.errors }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-dark mt-2">
+          Guardar pedido
+        </button>
+      </form>
+    </div>
+
+    <!-- COLUMNA DERECHA: TOP SHOPPERS EN LA ZONA -->
+    <div class="col-md-4 mt-4 mt-md-0">
+      <h2 class="h6 mb-2">Top shoppers cerca de vos</h2>
+      <p class="text-muted small">
+        Basado en la ubicación que indicaste en tu perfil.
+      </p>
+
+      {% if top_shoppers %}
+      <div class="d-flex flex-column gap-2">
+        {% for shopper in top_shoppers %}
+        <article class="border rounded p-2">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="mb-0 fw-semibold">
+                {{ shopper.user.get_full_name|default:shopper.user.username }}
+              </p>
+              <p class="mb-1 small text-muted">
+                ⭐ {{ shopper.calificacion }} ·
+                {{ shopper.pedidos.count }} pedidos
+              </p>
+            </div>
+          </div>
+
+          {% if shopper.especialidades %}
+          <p class="mb-1 small">
+            {{ shopper.especialidades }}
+          </p>
+          {% endif %}
+
+          {% if shopper.ciudad_base or shopper.get_pais_display %}
+          <p class="mb-2 small text-muted">
+            📍
+            {% if shopper.ciudad_base %}
+              {{ shopper.ciudad_base }},
+            {% endif %}
+            {{ shopper.get_pais_display }}
+          </p>
+          {% endif %}
+
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-dark w-100"
+            onclick="elegirShopper('{{ shopper.pk }}')"
+          >
+            Elegir este shopper
+          </button>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted small mb-0">
+        Aún no hay shoppers destacados en tu zona. Podés dejar tu pedido abierto
+        para que alguien lo tome.
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Categorías para cada artículo
+  const categoriasArticulo = [
+    ["ROPA", "Ropa"],
+    ["CALZADO", "Calzado"],
+    ["TECH", "Tecnología"],
+    ["ACCESORIOS", "Accesorios"],
+    ["COSMETICOS", "Cosméticos / Belleza"],
+    ["HOGAR", "Hogar"],
+    ["DEPORTES", "Deportes"],
+    ["NINOS", "Niños / Bebés"],
+    ["JUGUETES", "Juguetes"],
+    ["LUJO", "Lujo"],
+    ["OTRO", "Otro"],
+  ];
+
+  const numeroSelect = document.getElementById("numero_articulos");
+  const contenedor = document.getElementById("articulos-container");
+
+  function renderArticulos() {
+    const n = parseInt(numeroSelect.value || "1");
+    contenedor.innerHTML = "";
+
+    for (let i = 1; i <= n; i++) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "border rounded p-3 mb-3";
+
+      wrapper.innerHTML = `
+        <h2 class="h6 mb-3">Artículo ${i}</h2>
+        <div class="row g-2 mb-2">
+          <div class="col-md-4">
+            <label class="form-label">Artículo</label>
+            <input
+              type="text"
+              name="articulo_${i}_nombre"
+              class="form-control"
+              required
+            />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Categoría</label>
+            <select
+              name="articulo_${i}_categoria"
+              class="form-select"
+            >
+              ${categoriasArticulo
+                .map(
+                  ([value, label]) =>
+                    `<option value="${value}">${label}</option>`
+                )
+                .join("")}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Cantidad</label>
+            <input
+              type="number"
+              name="articulo_${i}_cantidad"
+              class="form-control"
+              min="1"
+              value="1"
+            />
+          </div>
+        </div>
+
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label">Foto del artículo</label>
+            <input
+              type="text"
+              name="articulo_${i}_foto_url"
+              class="form-control mb-2"
+              placeholder="Pegá aquí un enlace (URL) a la foto"
+            />
+            <input
+              type="file"
+              name="articulo_${i}_foto_file"
+              class="form-control"
+              accept="image/*"
+            />
+            <div class="form-text">
+              Podés pegar un URL o adjuntar una imagen. Ambos son opcionales.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Descripción</label>
+            <input
+              type="text"
+              name="articulo_${i}_nota"
+              class="form-control"
+              placeholder="Color, talla, marca, tienda, etc."
+            />
+          </div>
+        </div>
+      `;
+      contenedor.appendChild(wrapper);
+    }
+  }
+
+  numeroSelect.addEventListener("change", renderArticulos);
+  renderArticulos();
+
+  // Seleccionar shopper desde el bloque "Top shoppers cerca de vos"
+  function elegirShopper(shopperId) {
+    const select = document.getElementById("id_shopper");
+    if (!select) return;
+    select.value = String(shopperId);
+    // Opcionalmente podríamos mostrar un pequeño feedback visual
+  }
+</script>
+{% endblock %}
+

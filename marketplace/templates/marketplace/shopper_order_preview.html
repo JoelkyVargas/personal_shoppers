@@ -1,0 +1,78 @@
+
+{% extends "marketplace/base.html" %}
+{% load marketplace_extras %}
+{% block title %}Ver pedido #{{ pedido.id }}{% endblock %}
+
+{% block content %}
+<h1 class="h5 mb-3">Pedido #{{ pedido.id }} · {{ pedido.titulo }}</h1>
+
+<section class="mb-4">
+  <div class="ps-card">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <p class="mb-1">
+          <strong>Cliente:</strong>
+          {{ cliente.user.get_full_name|default:cliente.user.username }}
+        </p>
+        {% if ubicacion_cliente %}
+        <p class="mb-1">
+          <strong>Ubicación:</strong> {{ ubicacion_cliente }}
+        </p>
+        {% endif %}
+        <p class="mb-1">
+          <strong>Moneda:</strong> {{ pedido.get_moneda_display }}
+        </p>
+        <p class="mb-1">
+          <strong>Presupuesto:</strong>
+          {% if pedido.modo_presupuesto == "POR_ARTICULO" %}
+            Máx/art: {{ pedido.presupuesto_maximo_por_articulo|moneda }}
+          {% else %}
+            Máx total: {{ pedido.presupuesto_maximo_total|moneda }}
+          {% endif %}
+        </p>
+        {% if pedido.descripcion %}
+        <p class="mb-0 mt-2">
+          <strong>Descripción:</strong> {{ pedido.descripcion }}
+        </p>
+        {% endif %}
+      </div>
+
+      <div class="text-end">
+        <a href="{% url 'shopper_tomar_pedido' pedido.pk %}" class="btn btn-dark btn-sm">
+          Tomar este pedido
+        </a>
+        <a href="{% url 'shopper_dashboard' %}" class="btn btn-outline-dark btn-sm ms-1">
+          Volver
+        </a>
+
+        {% if whatsapp_cliente %}
+        <div class="mt-2">
+          <a href="{{ whatsapp_cliente }}" target="_blank" class="btn btn-success btn-sm">
+            WhatsApp del cliente
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="h6 mb-2">Artículos del pedido</h2>
+  <div class="ps-card">
+    {% if pedido.articulos.all %}
+      <ul class="list-unstyled mb-0">
+        {% for art in pedido.articulos.all %}
+        <li class="mb-1">
+          <strong>{{ art.nombre }}</strong> ({{ art.get_categoria_display }})
+          · Cantidad: {{ art.cantidad }}
+          {% if art.nota %} · <span class="text-muted">Nota: {{ art.nota }}</span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted small mb-0">Este pedido aún no tiene artículos detallados.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

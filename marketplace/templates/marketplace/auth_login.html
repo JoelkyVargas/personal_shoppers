@@ -1,0 +1,29 @@
+{% extends "marketplace/base.html" %}
+{% block title %}Iniciar sesión · Personal Shoppers{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="ps-card">
+      <h1 class="h5 mb-3">Iniciar sesión</h1>
+
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-dark w-100 mt-2">Entrar</button>
+      </form>
+
+      <hr />
+      <p class="small text-muted mb-1">¿No tenés cuenta?</p>
+      <div class="d-flex gap-2">
+        <a href="{% url 'register_customer' %}" class="btn btn-outline-dark btn-sm w-50">
+          Cliente
+        </a>
+        <a href="{% url 'register_shopper' %}" class="btn btn-outline-dark btn-sm w-50">
+          Shopper
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

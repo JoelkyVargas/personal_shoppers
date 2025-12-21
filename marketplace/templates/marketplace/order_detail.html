@@ -1,0 +1,164 @@
+{% extends "marketplace/base.html" %}
+{% load marketplace_extras %}
+{% block title %}Pedido #{{ pedido.id }}{% endblock %}
+
+{% block content %}
+<h1 class="h5 mb-3">Pedido #{{ pedido.id }} · {{ pedido.titulo }}</h1>
+
+<section class="mb-4">
+  <div class="ps-card">
+    <div class="row">
+      <div class="col-md-8">
+        <p class="mb-1">
+          <strong>Shopper:</strong>
+          {% if pedido.shopper %}
+            {{ pedido.shopper.user.get_full_name|default:pedido.shopper.user.username }}
+          {% else %}
+            <span class="text-muted">Sin shopper asignado</span>
+          {% endif %}
+        </p>
+
+        <p class="mb-1"><strong>Estado:</strong> {{ pedido.get_estado_display }}</p>
+
+        <p class="mb-1">
+          <strong>Precio:</strong>
+          {% if pedido.precio %}
+            {{ pedido.precio|moneda }}
+          {% else %}
+            <span class="text-muted">Sin definir</span>
+          {% endif %}
+          · <strong>Pagos realizados:</strong> {{ pedido.total_pagos|moneda }}
+          · <strong>Saldo:</strong> {{ pedido.saldo|moneda }}
+        </p>
+
+        <p class="mb-1"><strong>Moneda:</strong> {{ pedido.get_moneda_display }}</p>
+      </div>
+
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        {% if whatsapp_shopper %}
+        <a href="{{ whatsapp_shopper }}" target="_blank" class="btn btn-success mb-2">
+          Chatear con el shopper
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pagos" class="mb-4">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <h2 class="h6 mb-2">Pagos realizados</h2>
+      <div class="ps-card">
+        <div class="table-responsive mb-3">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Monto</th>
+                <th>Tipo</th>
+                <th>Método</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pago in pedido.pagos.all %}
+              <tr>
+                <td>{{ pago.monto|moneda }}</td>
+                <td>{{ pago.get_tipo_pago_display }}</td>
+                <td>{{ pago.get_metodo_display }}</td>
+                <td>
+                  {% if pago.aprobado %}
+                    <span class="badge bg-success">Aprobado</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">Pendiente</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-muted small">
+                  Aún no hay pagos registrados.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="h6 mb-2">Reportar un abono</h3>
+        <form method="post" class="row g-2">
+          {% csrf_token %}
+          <div class="col-6">
+            <label class="form-label small mb-1">Monto</label>
+            <input type="number" name="monto" class="form-control form-control-sm" min="1" required />
+          </div>
+          <div class="col-6">
+            <label class="form-label small mb-1">Tipo</label>
+            <select name="tipo_pago" class="form-select form-select-sm">
+              <option value="ADELANTO">Adelanto</option>
+              <option value="PARCIAL" selected>Pago parcial</option>
+              <option value="FINAL">Pago final</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label small mb-1">Método</label>
+            <select name="metodo" class="form-select form-select-sm">
+              <option value="SINPE">SINPE</option>
+              <option value="EFECTIVO">Efectivo</option>
+              <option value="TARJETA">Tarjeta</option>
+              <option value="PAYPAL">PayPal</option>
+              <option value="OTRO" selected>Otro</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label small mb-1">Nota</label>
+            <input type="text" name="nota" class="form-control form-control-sm" placeholder="Opcional" />
+          </div>
+          <div class="col-12">
+            <button type="submit" name="reportar_pago" class="btn btn-dark btn-sm">
+              Enviar para aprobación
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <h2 class="h6 mb-2">Gastos (solo informativo)</h2>
+      <div class="ps-card">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th>Monto</th>
+                <th>Moneda</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for gasto in pedido.gastos.all %}
+              <tr>
+                <td>{{ gasto.get_categoria_display }}</td>
+                <td>{{ gasto.monto|moneda }}</td>
+                <td>{{ gasto.get_moneda_display }}</td>
+                <td>{{ gasto.creado|date:"d/m/Y" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-muted small">
+                  Aún no hay gastos registrados para este pedido.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="text-muted small mt-2 mb-0">
+          Estos gastos no se muestran en tu dashboard principal; solo aquí.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,246 @@
+
+{% extends "marketplace/base.html" %}
+{% load marketplace_extras %}
+{% block title %}Pedido #{{ pedido.id }}{% endblock %}
+
+{% block content %}
+<h1 class="h5 mb-3">Pedido #{{ pedido.id }} · {{ pedido.titulo }}</h1>
+
+<section class="mb-4">
+  <div class="ps-card">
+    <div class="row">
+      <div class="col-md-8">
+        <p class="mb-1">
+          <strong>Cliente:</strong>
+          {{ pedido.customer.user.get_full_name|default:pedido.customer.user.username }}
+        </p>
+
+        <div class="mb-2">
+          <form method="post" class="d-flex align-items-center gap-2">
+            {% csrf_token %}
+            <strong>Estado:</strong>
+            <select name="estado" class="form-select form-select-sm" style="max-width: 220px;">
+              <option value="EN_SELECCION" {% if pedido.estado == "EN_SELECCION" %}selected{% endif %}>En selección</option>
+              <option value="COMPRADO" {% if pedido.estado == "COMPRADO" %}selected{% endif %}>Comprado</option>
+              <option value="EN_TRANSITO" {% if pedido.estado == "EN_TRANSITO" %}selected{% endif %}>En tránsito</option>
+              <option value="ENTREGADO" {% if pedido.estado == "ENTREGADO" %}selected{% endif %}>Entregado</option>
+              <option value="CANCELADO" {% if pedido.estado == "CANCELADO" %}selected{% endif %}>Cancelado</option>
+            </select>
+            <button type="submit" name="guardar_estado" class="btn btn-sm btn-outline-dark">
+              Guardar
+            </button>
+          </form>
+        </div>
+
+        <p class="mb-1">
+          <strong>Moneda:</strong> {{ pedido.get_moneda_display }}
+        </p>
+        <p class="mb-1">
+          <strong>Presupuesto:</strong>
+          {% if pedido.modo_presupuesto == "POR_ARTICULO" %}
+            Máx/art: {{ pedido.presupuesto_maximo_por_articulo|moneda }}
+          {% else %}
+            Máx total: {{ pedido.presupuesto_maximo_total|moneda }}
+          {% endif %}
+        </p>
+
+        {% if pedido.foto_referencia_url %}
+        <p class="mb-1">
+          <strong>Foto de referencia:</strong>
+          <a href="{{ pedido.foto_referencia_url }}" target="_blank">Ver</a>
+        </p>
+        {% endif %}
+
+        {% if pedido.descripcion %}
+        <p class="mb-0 mt-2">
+          <strong>Descripción:</strong> {{ pedido.descripcion }}
+        </p>
+        {% endif %}
+      </div>
+
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        {% if whatsapp_cliente %}
+        <a
+          href="{{ whatsapp_cliente }}"
+          target="_blank"
+          class="btn btn-success mb-2"
+        >
+          Chatear con el cliente
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mb-4">
+  <h2 class="h6 mb-2">Artículos del pedido</h2>
+  <div class="ps-card">
+    {% if pedido.articulos.all %}
+    <ul class="list-unstyled mb-0">
+      {% for art in pedido.articulos.all %}
+      <li class="mb-2">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+          <div>
+            <strong>{{ art.nombre }}</strong>
+            ({{ art.get_categoria_display }})
+            · Cantidad: {{ art.cantidad }}
+            {% if art.nota %} · <span class="text-muted">Nota: {{ art.nota }}</span>{% endif %}
+          </div>
+
+          <div class="text-md-end">
+            <form method="post" class="d-flex align-items-center gap-2 justify-content-md-end">
+              {% csrf_token %}
+              <input type="hidden" name="item_id" value="{{ art.id }}" />
+              <label class="small text-muted mb-0">Precio unitario</label>
+              <input
+                type="number"
+                name="precio_unitario"
+                value="{{ art.precio_unitario|default_if_none:'' }}"
+                class="form-control form-control-sm"
+                style="width: 120px;"
+                min="0"
+              />
+              <button type="submit" name="guardar_precio_articulo" class="btn btn-sm btn-outline-dark">
+                Guardar
+              </button>
+            </form>
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted small mb-0">
+      Este pedido aún no tiene artículos detallados.
+    </p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="mb-4">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <h2 class="h6 mb-2">Pagos recibidos</h2>
+      <div class="ps-card mb-3">
+        <div class="table-responsive mb-2">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Monto</th>
+                <th>Tipo</th>
+                <th>Método</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pago in pedido.pagos.all %}
+              <tr>
+                <td>{{ pago.monto|moneda }}</td>
+                <td>{{ pago.get_tipo_pago_display }}</td>
+                <td>{{ pago.get_metodo_display }}</td>
+                <td>{{ pago.creado|date:"d/m/Y" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-muted small">
+                  Aún no hay pagos registrados.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <form method="post" class="mt-2 ps-inline-form">
+          {% csrf_token %}
+          {{ pago_form.as_p }}
+          <button
+            type="submit"
+            name="agregar_pago"
+            class="btn btn-dark btn-sm mt-1"
+          >
+            Agregar pago
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <h2 class="h6 mb-2">Gastos asociados a este pedido</h2>
+      <div class="ps-card mb-3">
+        <div class="table-responsive mb-2">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th style="min-width: 140px;">Monto</th>
+                <th>Moneda</th>
+                <th>Fecha</th>
+                <th style="min-width: 150px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for gasto in pedido.gastos.all %}
+              <tr>
+                <td>{{ gasto.get_categoria_display }}</td>
+
+                <td>
+                  <form method="post" class="d-flex align-items-center gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="gasto_id" value="{{ gasto.id }}" />
+                    <input
+                      type="number"
+                      name="monto"
+                      value="{{ gasto.monto }}"
+                      class="form-control form-control-sm"
+                      style="width: 120px;"
+                      min="0"
+                    />
+                </td>
+
+                <td>{{ gasto.get_moneda_display }}</td>
+                <td>{{ gasto.creado|date:"d/m/Y" }}</td>
+
+                <td class="text-end">
+                    <button type="submit" name="editar_gasto_pedido" class="btn btn-sm btn-outline-dark">
+                      Guardar
+                    </button>
+                    <button
+                      type="submit"
+                      name="borrar_gasto_pedido"
+                      class="btn btn-sm btn-outline-danger ms-1"
+                      onclick="return confirm('¿Borrar este gasto?');"
+                    >
+                      Borrar
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-muted small">
+                  Aún no hay gastos registrados para este pedido.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <form method="post" class="mt-2 ps-inline-form">
+          {% csrf_token %}
+          {{ gasto_form.as_p }}
+          <button
+            type="submit"
+            name="agregar_gasto"
+            class="btn btn-dark btn-sm mt-1"
+          >
+            Agregar gasto
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

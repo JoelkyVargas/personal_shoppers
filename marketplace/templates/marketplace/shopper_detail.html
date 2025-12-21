@@ -1,0 +1,38 @@
+{% extends "marketplace/base.html" %}
+{% block title %}Perfil de shopper{% endblock %}
+
+{% block content %}
+<section class="mb-4">
+  <div class="ps-card">
+    <div class="row">
+      <div class="col-md-8">
+        <h1 class="h5 mb-1">
+          {{ shopper.user.get_full_name|default:shopper.user.username }}
+        </h1>
+        <p class="small text-muted mb-1">
+          {{ shopper.specialties|default:"Sin especialidades definidas" }}
+        </p>
+        <p class="small text-muted mb-1">
+          📍 {{ shopper.current_location_label }}
+        </p>
+        <p class="small text-muted mb-0">
+          ⭐ {{ shopper.rating }} · Pedidos atendidos: {{ orders_count }}
+        </p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        {% if shopper.whatsapp_link %}
+        <a href="{{ shopper.whatsapp_link }}" target="_blank" class="btn btn-dark mb-2">
+          Escribirle por WhatsApp
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="text-muted small">
+    (Aquí más adelante podrás agregar ejemplos de compras, reseñas, próximos viajes, etc.)
+  </p>
+</section>
+{% endblock %}

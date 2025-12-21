@@ -1,0 +1,100 @@
+
+{% extends "marketplace/base.html" %}
+{% load marketplace_extras %}
+{% block title %}Gastos generales{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-3">Gastos generales</h1>
+
+<section class="mb-4">
+  <div class="ps-card">
+    <h2 class="h6 mb-3">Registrar nuevo gasto general</h2>
+    <form method="post" class="ps-inline-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-dark btn-sm">Agregar</button>
+    </form>
+  </div>
+</section>
+
+<section>
+  <h2 class="h6 mb-2">Historial</h2>
+  <div class="ps-table-wrapper">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th style="min-width: 160px;">Categoría</th>
+            <th style="min-width: 120px;">Monto</th>
+            <th style="min-width: 120px;">Moneda</th>
+            <th>Descripción</th>
+            <th style="min-width: 120px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for g in gastos %}
+          <tr>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="gasto_id" value="{{ g.id }}" />
+
+              <td>
+                <select name="categoria" class="form-select form-select-sm">
+                  {% for value,label in categoria_choices %}
+                    <option value="{{ value }}" {% if g.categoria == value %}selected{% endif %}>
+                      {{ label }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </td>
+
+              <td>
+                <input
+                  type="number"
+                  name="monto"
+                  value="{{ g.monto }}"
+                  class="form-control form-control-sm"
+                  min="0"
+                />
+              </td>
+
+              <td>
+                <select name="moneda" class="form-select form-select-sm">
+                  {% for value,label in currency_choices %}
+                    <option value="{{ value }}" {% if g.moneda == value %}selected{% endif %}>
+                      {{ label }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  name="descripcion"
+                  value="{{ g.descripcion }}"
+                  class="form-control form-control-sm"
+                  placeholder="Descripción"
+                />
+              </td>
+
+              <td class="text-end">
+                <button type="submit" name="edit_gasto" value="1" class="btn btn-sm btn-outline-dark">
+                  Guardar
+                </button>
+              </td>
+            </form>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">
+              Aún no hay gastos generales registrados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
