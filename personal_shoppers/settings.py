@@ -31,6 +31,11 @@ DEBUG = os.environ.get("DEBUG", "False").strip().lower() in ("1", "true", "yes",
 _allowed_hosts_raw = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost")
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_raw.split(",") if h.strip()]
 
+render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+if render_host and render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_host)
+
+
 # CSRF trusted origins por coma (solo lo usarás en Render con https)
 _csrf_trusted_raw = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_trusted_raw.split(",") if o.strip()]
@@ -92,17 +97,17 @@ WSGI_APPLICATION = "personal_shoppers.wsgi.application"
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
 if DATABASE_URL:
-    # Recomendado en Render: pip install dj-database-url psycopg[binary]
-    try:
-        import dj_database_url
-        DATABASES = {
-            "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
-        }
-    except Exception as e:
-        raise RuntimeError(
-            "DATABASE_URL está definido pero falta dj-database-url. "
-            "Instalá: pip install dj-database-url psycopg[binary]"
-        ) from e
+    import dj_database_url
+
+    db = dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+
+    # SOLO Postgres necesita sslmode
+    if db.get("ENGINE") in ("django.db.backends.postgresql", "django.db.backends.postgresql_psycopg2"):
+        db.setdefault("OPTIONS", {})
+        db["OPTIONS"]["sslmode"] = "require"
+
+    DATABASES = {"default": db}
+
 else:
     DATABASES = {
         "default": {
@@ -110,6 +115,7 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
 
 
 # =========================
