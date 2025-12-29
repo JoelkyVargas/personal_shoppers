@@ -35,7 +35,6 @@ render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
 if render_host and render_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(render_host)
 
-
 # CSRF trusted origins por coma (solo lo usarás en Render con https)
 _csrf_trusted_raw = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_trusted_raw.split(",") if o.strip()]
@@ -51,6 +50,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    # Cloudinary (MEDIA)
+    # Importante: después de staticfiles para no interferir con static
+    "cloudinary_storage",
+    "cloudinary",
+
     "marketplace",
 ]
 
@@ -64,10 +69,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
-
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 
 ROOT_URLCONF = "personal_shoppers.urls"
 
@@ -93,7 +94,7 @@ WSGI_APPLICATION = "personal_shoppers.wsgi.application"
 # =========================
 # Database
 # - Local: sqlite (default)
-# - Render: Postgres por DATABASE_URL (cuando lo actives)
+# - Render: Postgres por DATABASE_URL
 # =========================
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
@@ -103,12 +104,14 @@ if DATABASE_URL:
     db = dj_database_url.parse(DATABASE_URL, conn_max_age=600)
 
     # SOLO Postgres necesita sslmode
-    if db.get("ENGINE") in ("django.db.backends.postgresql", "django.db.backends.postgresql_psycopg2"):
+    if db.get("ENGINE") in (
+        "django.db.backends.postgresql",
+        "django.db.backends.postgresql_psycopg2",
+    ):
         db.setdefault("OPTIONS", {})
         db["OPTIONS"]["sslmode"] = "require"
 
     DATABASES = {"default": db}
-
 else:
     DATABASES = {
         "default": {
@@ -118,10 +121,8 @@ else:
     }
 
 
-
 # =========================
 # Password validators
-# (En prod conviene habilitarlos; por ahora no los cambio si estabas en MVP)
 # =========================
 AUTH_PASSWORD_VALIDATORS = []
 
@@ -140,10 +141,22 @@ USE_TZ = True
 # =========================
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"  # necesario para collectstatic en Render
+STATIC_ROOT = BASE_DIR / "staticfiles"  # collectstatic en Render
 
-MEDIA_URL = "/media/"
+MEDIA_URL = "/media/"  # Cloudinary entrega URLs propias; esto casi no se usa en prod
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Django 4.2+ / 5.x: STORAGES (recomendado)
+STORAGES = {
+    # MEDIA -> Cloudinary
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    # STATIC -> WhiteNoise
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
