@@ -120,7 +120,7 @@ class ShopperProfileForm(forms.ModelForm):
     especialidades = forms.MultipleChoiceField(
         choices=ESPECIALIDADES_CHOICES,
         required=False,
-        widget=forms.SelectMultiple(attrs={"class": "form-select", "size": "7"}),
+        widget=forms.MultipleHiddenInput(),
         label="Especialidades de compra",
     )
 

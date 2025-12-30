@@ -246,7 +246,8 @@ def mi_perfil(request):
             es_trip_post = (form_type == "trip") or ("agregar_viaje" in request.POST)
 
             if es_profile_post:
-                profile_form = ShopperProfileForm(request.POST, instance=shopper_profile)
+                # IMPORTANTÍSIMO: incluir request.FILES (aunque no subas foto, esto es correcto)
+                profile_form = ShopperProfileForm(request.POST, request.FILES, instance=shopper_profile)
                 if profile_form.is_valid():
                     profile_form.save()
 
@@ -272,6 +273,13 @@ def mi_perfil(request):
 
         pedidos_completados = shopper_profile.pedidos.filter(estado="ENTREGADO").count()
 
+        # ===== CLAVE: calcular foto_url y pasarlo al template =====
+        foto_url = None
+        if hasattr(shopper_profile, "photo") and getattr(shopper_profile.photo, "image", None):
+            try:
+                foto_url = shopper_profile.photo.image.url
+            except Exception:
+                foto_url = None
 
         context = {
             "shopper": shopper_profile,
@@ -279,7 +287,8 @@ def mi_perfil(request):
             "trip_form": trip_form,
             "viajes_futuros": viajes_futuros,
             "viajes_pasados": viajes_pasados,
-            "pedidos_completados": pedidos_completados
+            "pedidos_completados": pedidos_completados,
+            "foto_url": foto_url,  # <-- ESTO ARREGLA EL REQUIRED FALSO
         }
         return render(request, "marketplace/shopper_profile.html", context)
 
@@ -290,6 +299,7 @@ def mi_perfil(request):
         pass
 
     return redirect("home")
+
 
 
 @login_required
