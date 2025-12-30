@@ -164,14 +164,13 @@ class ShopperProfileForm(forms.ModelForm):
             "acepta_pagos_parciales",
             # monto_minimo_habitual eliminado
             # monto_maximo_habitual eliminado
-            "tarifa_base_crc",
+            #"tarifa_base_crc",
             "esquema_tarifas",
         ]
         widgets = {
             "ciudad_base": forms.TextInput(attrs={"class": "form-control"}),
             "ciudad_extranjero": forms.TextInput(attrs={"class": "form-control"}),
             "fecha_regreso": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-            "tarifa_base_crc": forms.NumberInput(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):

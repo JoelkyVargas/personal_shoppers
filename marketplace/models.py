@@ -128,7 +128,7 @@ class ShopperProfile(TimestampedModel):
     pais_extranjero = models.CharField(max_length=100, blank=True)
     fecha_regreso = models.DateField(null=True, blank=True)
 
-    tarifa_base_crc = models.PositiveIntegerField(default=0)
+    # tarifa_base_crc = models.PositiveIntegerField(default=0)
 
     acepta_pagos_parciales = models.BooleanField(
         default=True,
