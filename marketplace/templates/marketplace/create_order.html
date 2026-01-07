@@ -229,21 +229,21 @@
 
         <div class="row g-2">
           <div class="col-md-6">
-            <label class="form-label">Foto del artículo</label>
+            <label class="form-label">Referencia del artículo</label>
             <input
               type="text"
-              name="articulo_${i}_foto_url"
+              name="articulo_${i}_referencia_url"
               class="form-control mb-2"
-              placeholder="Pegá aquí un enlace (URL) a la foto"
+              placeholder="Pegá aquí un link (URL) del producto o referencia"
             />
             <input
               type="file"
-              name="articulo_${i}_foto_file"
+              name="articulo_${i}_referencia_foto"
               class="form-control"
               accept="image/*"
             />
             <div class="form-text">
-              Podés pegar un URL o adjuntar una imagen. Ambos son opcionales.
+              Podés pegar un link o adjuntar una foto. Ambos son opcionales.
             </div>
           </div>
           <div class="col-md-6">
@@ -273,4 +273,3 @@
   }
 </script>
 {% endblock %}
-
