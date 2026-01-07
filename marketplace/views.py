@@ -670,7 +670,10 @@ def create_order(request):
     customer_profile = get_object_or_404(CustomerProfile, user=request.user)
 
     if request.method == "POST":
-        form = OrderForm(request.POST)
+        # IMPORTANTE: el OrderForm no maneja los archivos por artículo,
+        # pero igual le pasamos request.FILES por consistencia.
+        form = OrderForm(request.POST, request.FILES)
+
         try:
             numero_articulos = int(request.POST.get("numero_articulos", "1") or 1)
         except ValueError:
@@ -696,12 +699,21 @@ def create_order(request):
                 nombres.append(nombre)
 
                 categoria = request.POST.get(f"articulo_{i}_categoria") or "OTRO"
+
                 cantidad_raw = request.POST.get(f"articulo_{i}_cantidad")
                 try:
                     cantidad = int(cantidad_raw or 1)
                 except ValueError:
                     cantidad = 1
+
                 nota = (request.POST.get(f"articulo_{i}_nota") or "").strip()
+
+                # ===== NUEVO: capturar referencia por artículo (URL y/o archivo) =====
+                # Según tu create_order.html actual:
+                # - URL viene en articulo_{i}_foto_url
+                # - Archivo viene en articulo_{i}_foto_file
+                referencia_url = (request.POST.get(f"articulo_{i}_foto_url") or "").strip()
+                referencia_foto = request.FILES.get(f"articulo_{i}_foto_file")
 
                 OrderItem.objects.create(
                     pedido=pedido,
@@ -709,6 +721,9 @@ def create_order(request):
                     categoria=categoria,
                     cantidad=cantidad,
                     nota=nota,
+                    # Guardar referencia (si vienen vacíos, quedan en blanco/null)
+                    referencia_url=referencia_url,
+                    referencia_foto=referencia_foto,
                 )
 
             if nombres:
