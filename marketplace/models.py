@@ -333,7 +333,7 @@ class OrderItem(TimestampedModel):
         ("DEPORTES", "Deportes"),
         ("NINOS", "Niños / Bebés"),
         ("JUGUETES", "Juguetes"),
-        ("LUJO", "Lujo"),
+        ("LUJO", "Lujo"),   
         ("OTRO", "Otro"),
     ]
 
@@ -346,6 +346,22 @@ class OrderItem(TimestampedModel):
     )
     cantidad = models.PositiveIntegerField(default=1)
     nota = models.CharField("Nota", max_length=255, blank=True)
+
+
+    # Link / foto de referencia por artículo (para que el shopper pueda ver/descargar)
+    referencia_url = models.URLField(
+        blank=True,
+        verbose_name="Link de referencia",
+        help_text="URL del producto (ej. Amazon, Walmart, etc.).",
+    )
+    referencia_foto = models.ImageField(
+        upload_to="order_items/",
+        blank=True,
+        null=True,
+        verbose_name="Foto de referencia",
+        help_text="Foto o captura del artículo que el cliente desea.",
+    )
+
 
     # NUEVO: precio por artículo (unitario) definido por el shopper
     precio_unitario = models.PositiveIntegerField(

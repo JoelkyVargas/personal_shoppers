@@ -47,7 +47,7 @@
         {% if pedido.foto_referencia_url %}
         <p class="mb-1">
           <strong>Foto de referencia:</strong>
-          <a href="{{ pedido.foto_referencia_url }}" target="_blank">Ver</a>
+          <a href="{{ pedido.foto_referencia_url }}" target="_blank" rel="noopener noreferrer">Ver</a>
         </p>
         {% endif %}
 
@@ -86,6 +86,21 @@
             ({{ art.get_categoria_display }})
             · Cantidad: {{ art.cantidad }}
             {% if art.nota %} · <span class="text-muted">Nota: {{ art.nota }}</span>{% endif %}
+
+            {# === NUEVO: Ver Referencia por artículo === #}
+            <div class="mt-1">
+              {% if art.referencia_foto %}
+                <a href="{{ art.referencia_foto.url }}" target="_blank" rel="noopener noreferrer">
+                  Ver Referencia
+                </a>
+              {% elif art.referencia_url %}
+                <a href="{{ art.referencia_url }}" target="_blank" rel="noopener noreferrer">
+                  Ver Referencia
+                </a>
+              {% else %}
+                <span class="text-muted small">Sin referencia</span>
+              {% endif %}
+            </div>
           </div>
 
           <div class="text-md-end">

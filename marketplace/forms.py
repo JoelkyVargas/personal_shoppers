@@ -234,10 +234,10 @@ class OrderForm(forms.ModelForm):
         label="Moneda",
         choices=CURRENCY_CHOICES,
     )
-    foto_referencia_url = forms.URLField(
-        label="Foto de referencia (URL)",
+    referencia_foto = forms.ImageField(
         required=False,
-        help_text="Opcional: enlace a una foto de referencia del producto.",
+        label="Foto de referencia",
+        widget=forms.ClearableFileInput(attrs={"class": "form-control", "accept": "image/*"}),
     )
 
     class Meta:

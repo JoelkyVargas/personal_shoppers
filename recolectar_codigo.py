@@ -16,7 +16,7 @@ Created on Tue Nov 11 20:57:40 2025
 import os
 
 # CONFIGURACIÓN: tú solo cambias ESTA línea con la ruta de tu proyecto
-PROJECT_ROOT = r"C:\Users\jvz16\Proyectos"  # <-- pon aquí la raíz de tu proyecto
+PROJECT_ROOT = r"C:\Users\jvz16\Proyectos\personal_shoppers"  # <-- pon aquí la raíz de tu proyecto
 
 # nombre del archivo de salida en la raíz del proyecto
 OUTPUT_FILENAME = "personal_shoppers_codigo_completo.txt"
