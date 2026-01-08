@@ -246,7 +246,7 @@ class OrderForm(forms.ModelForm):
             "presupuesto_maximo_total",
             "moneda",
             "shopper",
-            "foto_referencia_url",
+            "referencia_foto",
         ]
 
     def __init__(self, *args, **kwargs):

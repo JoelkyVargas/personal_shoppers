@@ -721,7 +721,6 @@ def create_order(request):
                     categoria=categoria,
                     cantidad=cantidad,
                     nota=nota,
-                    # Guardar referencia (si vienen vacíos, quedan en blanco/null)
                     referencia_url=referencia_url,
                     referencia_foto=referencia_foto,
                 )
