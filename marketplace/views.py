@@ -712,8 +712,8 @@ def create_order(request):
                 # Según tu create_order.html actual:
                 # - URL viene en articulo_{i}_foto_url
                 # - Archivo viene en articulo_{i}_foto_file
-                referencia_url = (request.POST.get(f"articulo_{i}_foto_url") or "").strip()
-                referencia_foto = request.FILES.get(f"articulo_{i}_foto_file")
+                referencia_url = (request.POST.get(f"articulo_{i}_referencia_url") or "").strip()
+                referencia_foto = request.FILES.get(f"articulo_{i}_referencia_foto")
 
                 OrderItem.objects.create(
                     pedido=pedido,
