@@ -3,17 +3,84 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-6 col-lg-5">
+  <div class="col-md-6">
     <div class="ps-card">
-      <h1 class="h5 mb-3">Crear cuenta de cliente</h1>
+      <h1 class="h4 mb-3">Registrarme como cliente</h1>
+      <p class="text-muted small mb-3">
+        Completá tus datos para poder crear pedidos y contactar shoppers.
+      </p>
 
+      {# 🔹 ALERTA GENERAL SI HAY ERRORES EN EL FORM #}
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <strong>Revisá el formulario.</strong>
+        Hay uno o más errores. Corregí los campos marcados en rojo y volvé a intentar.
+      </div>
+
+      {# 🔹 DEBUG (opcional): mostrar errores crudos #}
+      <pre style="font-size: 0.8rem; background:#fff3cd; padding:.5rem; border-radius:.25rem; white-space:pre-wrap;">
+{{ form.errors }}
+      </pre>
+      {% endif %}
 
       <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-dark w-100 mt-2">Registrarme</button>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+          {# Por si el form tuviera algún campo de foto/archivo por accidente #}
+          {% if field.name != "foto_url" and field.name != "foto_archivo" %}
+            <div class="mb-3">
+              {{ field.label_tag }}
+              {{ field }}
+              {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+              {% endif %}
+              {% if field.errors %}
+                {% for error in field.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        <button type="submit" class="btn btn-dark w-100">
+          Crear mi cuenta de cliente
+        </button>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+  // Asegura estilo Bootstrap aunque algún field no tenga class desde forms.py
+  (function () {
+    const form = document.querySelector("form");
+    if (!form) return;
+
+    const inputs = form.querySelectorAll("input, select, textarea");
+    inputs.forEach(el => {
+      const type = (el.getAttribute("type") || "").toLowerCase();
+      if (type === "hidden" || type === "checkbox" || type === "radio" || type === "submit" || type === "button") return;
+
+      // Si ya trae clases, no lo pisamos
+      if (el.classList.length > 0) return;
+
+      if (el.tagName.toLowerCase() === "select") {
+        el.classList.add("form-select");
+      } else {
+        el.classList.add("form-control");
+      }
+    });
+  })();
+</script>
 {% endblock %}
+
