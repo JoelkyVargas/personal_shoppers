@@ -379,48 +379,4 @@
   {% endif %}
 </section>
 
-{# Vitrina de algunos shoppers #}
-{% if shoppers and not es_shopper %}
-<section class="mb-4">
-  <h2 class="h5 mb-3">Algunos shoppers en la plataforma</h2>
-  <div class="row g-3">
-    {% for shopper in shoppers %}
-    <div class="col-md-4">
-      <article class="ps-card h-100">
-        <div class="d-flex flex-column h-100">
-          <div class="mb-2">
-            <h3 class="h6 mb-1">
-              {{ shopper.user.get_full_name|default:shopper.user.username }}
-            </h3>
-            <p class="small text-muted mb-1">
-              {{ shopper.especialidades|default:"Sin especialidades definidas" }}
-            </p>
-            <p class="small text-muted mb-0">
-              📍 {{ shopper.ubicacion_actual }}
-            </p>
-          </div>
-          <div class="mt-auto pt-2 d-flex justify-content-between align-items-center">
-            <span class="small text-muted">
-              ⭐ {{ shopper.calificacion }} / 5
-            </span>
-            <a
-              href="{% url 'shopper_detail' shopper.pk %}"
-              class="btn btn-sm btn-outline-secondary"
-            >
-              Ver perfil
-            </a>
-          </div>
-        </div>
-      </article>
-    </div>
-    {% endfor %}
-  </div>
-  <div class="text-center mt-3">
-    <a href="{% url 'buscar_shoppers' %}" class="btn btn-outline-dark btn-sm">
-      Ver todos los shoppers
-    </a>
-  </div>
-</section>
-{% endif %}
-
 {% endblock %}
