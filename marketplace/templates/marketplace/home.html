@@ -239,28 +239,33 @@
   <div class="ps-card text-center">
     <p class="text-muted mb-3">En números</p>
 
-    <div class="row g-5 justify-content-center ps-metrics-row">
-      <div class="col-12 col-md-4">
+    {# En móvil: 3 columnas en fila (horizontal) y con menos espacio.#}
+    {#   En desktop: se mantiene igual (col-md-4). #}
+    <div class="row g-2 g-md-5 justify-content-center ps-metrics-row">
+      <div class="col-4 col-md-4">
         <div class="ps-metric-card">
           <div class="ps-metric-value">{{ stats_shoppers|default:"0" }}</div>
-          <div class="ps-metric-label">shoppers activos</div>
+          <div class="ps-metric-label">shoppers<br>activos</div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
+
+      <div class="col-4 col-md-4">
         <div class="ps-metric-card">
           <div class="ps-metric-value">{{ stats_orders|default:"0" }}</div>
-          <div class="ps-metric-label">pedidos entregados</div>
+          <div class="ps-metric-label">pedidos<br>entregados</div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
+
+      <div class="col-4 col-md-4">
         <div class="ps-metric-card">
           <div class="ps-metric-value">⭐ {{ stats_rating|default:"0.0" }}</div>
-          <div class="ps-metric-label">calificación promedio</div>
+          <div class="ps-metric-label">calificación<br>promedio</div>
         </div>
       </div>
     </div>
   </div>
 </section>
+
 
 {# ============================#}
 {#Carrusel admin (fotos + comentario)#}
