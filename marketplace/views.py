@@ -576,7 +576,7 @@ def customer_dashboard(request):
 
     pedidos = (
         customer_profile.pedidos.select_related("shopper")
-        .prefetch_related("precio","pagos", "gastos", "articulos")
+        .prefetch_related("pagos", "gastos", "articulos")
         .order_by("-creado")
     )
 
