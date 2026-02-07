@@ -6,7 +6,7 @@ Created on Tue Nov 11 20:57:40 2025
 """
 
 ### POWERSHELL ###
-# cd "C:\Users\jvz16\Proyectos\salon_agenda"
+# cd "C:\Users\jvz16\Proyectos\personal_shoppers"
 # & "C:\Users\jvz16\anaconda3\python.exe" -m venv .venv
 # .\.venv\Scripts\Activate.ps1
 # python recolectar_codigo.py

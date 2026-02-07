@@ -440,20 +440,34 @@ def shopper_order_detail(request, pk):
             return redirect("shopper_order_detail", pk=pedido.pk)
 
         # NUEVO: Guardar precio unitario por artículo
+        # NUEVO: Guardar precio unitario por artículo
         if "guardar_precio_articulo" in request.POST:
             item_id = request.POST.get("item_id")
             precio_raw = (request.POST.get("precio_unitario") or "").strip()
 
             art = get_object_or_404(OrderItem, pk=item_id, pedido=pedido)
+
+            # Guardar / limpiar precio unitario del artículo
             if precio_raw.isdigit():
                 art.precio_unitario = int(precio_raw)
                 art.save()
             else:
-                # permitir limpiar si viene vacío
                 if precio_raw == "":
                     art.precio_unitario = None
                     art.save()
+
+            # ===== CLAVE: recalcular y persistir pedido.precio =====
+            total = 0
+            for a in pedido.articulos.all():
+                if a.precio_unitario is not None:
+                    total += int(a.precio_unitario) * int(a.cantidad or 1)
+
+            # Si querés que precio sea NULL cuando no hay ningún precio unitario:
+            pedido.precio = total if total > 0 else None
+            pedido.save()
+
             return redirect("shopper_order_detail", pk=pedido.pk)
+
 
         # NUEVO: Editar monto de un gasto ya creado (línea completa)
         if "editar_gasto_pedido" in request.POST:
