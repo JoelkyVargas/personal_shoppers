@@ -10,7 +10,9 @@ from datetime import timedelta
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
-from django.db.models import Sum, Count, Avg, Q
+from django.db.models import Sum, Count, Avg, Q, F, IntegerField, Value
+from django.db.models.functions import Coalesce
+from django.db.models.expressions import Subquery, OuterRef, ExpressionWrapper
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -306,9 +308,35 @@ def mi_perfil(request):
 def shopper_dashboard(request):
     shopper_profile = get_object_or_404(ShopperProfile, user=request.user)
 
+    # Subquery: pagos aprobados por pedido (evita duplicaciones por joins)
+    pagos_aprobados_sq = (
+        Payment.objects
+        .filter(pedido=OuterRef("pk"), aprobado=True)
+        .values("pedido")
+        .annotate(total=Sum("monto"))
+        .values("total")[:1]
+    )
+
+    # Subquery: gastos por pedido (evita duplicaciones por joins)
+    gastos_pedido_sq = (
+        Expense.objects
+        .filter(pedido=OuterRef("pk"))
+        .values("pedido")
+        .annotate(total=Sum("monto"))
+        .values("total")[:1]
+    )
+
     pedidos = (
         shopper_profile.pedidos.select_related("customer")
-        .prefetch_related("pagos", "gastos", "articulos")
+        .annotate(
+            pagos_recibidos_calc=Coalesce(Subquery(pagos_aprobados_sq, output_field=IntegerField()), Value(0)),
+            gastos_calc=Coalesce(Subquery(gastos_pedido_sq, output_field=IntegerField()), Value(0)),
+            precio_calc=Coalesce(F("precio"), Value(0)),
+        )
+        .annotate(
+            saldo_calc=ExpressionWrapper(F("precio_calc") - F("pagos_recibidos_calc"), output_field=IntegerField()),
+            ganancia_calc=ExpressionWrapper(F("pagos_recibidos_calc") - F("gastos_calc"), output_field=IntegerField()),
+        )
         .order_by("-creado")
     )
 

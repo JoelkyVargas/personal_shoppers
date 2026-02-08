@@ -122,9 +122,10 @@
             <th>Cliente</th>
             <th>Título</th>
             <th>Estado</th>
+            <th>Precio</th>
             <th>Pagos recibidos</th>
-            <th>Gastos</th>
             <th>Saldo</th>
+            <th>Ganancia</th>
             <th></th>
           </tr>
         </thead>
@@ -136,9 +137,19 @@
             </td>
             <td>{{ pedido.titulo }}</td>
             <td>{{ pedido.get_estado_display }}</td>
-            <td>{{ pedido.total_pagos|moneda }}</td>
-            <td>{{ pedido.total_gastos|moneda }}</td>
-            <td>{{ pedido.saldo|moneda }}</td>
+
+            <td>
+              {% if pedido.precio %}
+                {{ pedido.precio|moneda }}
+              {% else %}
+                <span class="text-muted small">Sin definir</span>
+              {% endif %}
+            </td>
+
+            <td>{{ pedido.pagos_recibidos_calc|moneda }}</td>
+            <td>{{ pedido.saldo_calc|moneda }}</td>
+            <td>{{ pedido.ganancia_calc|moneda }}</td>
+
             <td class="text-end">
               <a
                 href="{% url 'shopper_order_detail' pedido.pk %}"
@@ -150,7 +161,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="7" class="text-center text-muted">
+            <td colspan="8" class="text-center text-muted">
               Aún no tenés pedidos asignados.
             </td>
           </tr>
